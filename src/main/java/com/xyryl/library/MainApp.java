@@ -1,5 +1,7 @@
 package com.xyryl.library;
 
+import org.bson.Document;
+import com.google.api.client.auth.oauth2.Credential;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -19,10 +21,70 @@ public class MainApp extends Application {
     private final String bgStyle = "-fx-background-color: #1e1e2e;";
     private final String fieldStyle = "-fx-background-color: #2a2a3a; -fx-text-fill: white; -fx-prompt-text-fill: #999999; -fx-background-radius: 5px; -fx-padding: 6px;";
 
+    private String loggedInName = "";
+    private String loggedInEmail = "";
+
     @Override
     public void start(Stage primaryStage) {
-        Label title = new Label("Xylibrary - Library Management System");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+        showLoginScreen(primaryStage);
+    }
+
+    private void showLoginScreen(Stage primaryStage) {
+        Label title = new Label("Xylibrary");
+        title.setStyle("-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        Label subtitle = new Label("Library Management System");
+        subtitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #aaaaaa;");
+
+        Button googleLoginBtn = new Button("Sign in with Google");
+        googleLoginBtn.setStyle(buttonStyle);
+
+        Label statusLabel = new Label();
+        statusLabel.setStyle("-fx-text-fill: lightgreen;");
+
+        googleLoginBtn.setOnAction(e -> {
+            statusLabel.setStyle("-fx-text-fill: #cccccc;");
+            statusLabel.setText("Opening browser for sign-in...");
+            new Thread(() -> {
+                try {
+                    Credential credential = GoogleAuthService.getCredential();
+                    String[] userInfo = GoogleAuthService.getUserInfo(credential);
+                    loggedInName = userInfo[0];
+                    loggedInEmail = userInfo[1];
+
+                    Document existingUser = userService.findUserByEmail(loggedInEmail);
+                    if (existingUser == null) {
+                        userService.addUser(loggedInName, loggedInEmail, "Student");
+                    }
+
+                    javafx.application.Platform.runLater(() -> {
+                        showDashboard(primaryStage);
+                    });
+                } catch (Exception ex) {
+                    javafx.application.Platform.runLater(() -> {
+                        statusLabel.setStyle("-fx-text-fill: #ff6b6b;");
+                        statusLabel.setText("Login failed: " + ex.getMessage());
+                    });
+                }
+            }).start();
+        });
+
+        VBox layout = new VBox(15, title, subtitle, googleLoginBtn, statusLabel);
+        layout.setPadding(new Insets(40));
+        layout.setStyle(bgStyle + " -fx-alignment: center;");
+
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setTitle("Xylibrary - Login");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void showDashboard(Stage primaryStage) {
+        Label title = new Label("Xylibrary - Welcome, " + loggedInName + "!");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        Label emailLabel = new Label(loggedInEmail);
+        emailLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #aaaaaa;");
 
         Button addBookBtn = new Button("Add Book");
         Button viewBooksBtn = new Button("View Books");
@@ -40,11 +102,11 @@ public class MainApp extends Application {
         borrowBtn.setOnAction(e -> openBorrowForm());
         returnBtn.setOnAction(e -> openReturnForm());
 
-        VBox layout = new VBox(15, title, addBookBtn, viewBooksBtn, addUserBtn, borrowBtn, returnBtn);
+        VBox layout = new VBox(12, title, emailLabel, addBookBtn, viewBooksBtn, addUserBtn, borrowBtn, returnBtn);
         layout.setPadding(new Insets(30));
         layout.setStyle(bgStyle + " -fx-alignment: center;");
 
-        Scene scene = new Scene(layout, 400, 400);
+        Scene scene = new Scene(layout, 400, 450);
         primaryStage.setTitle("Xylibrary");
         primaryStage.setScene(scene);
         primaryStage.show();
