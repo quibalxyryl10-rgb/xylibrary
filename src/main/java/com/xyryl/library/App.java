@@ -2,15 +2,13 @@ package com.xyryl.library;
 
 public class App {
     public static void main(String[] args) {
-        UserService userService = new UserService();
+        LibraryService libraryService = new LibraryService();
 
-        
-        userService.addUser("Juan Dela Cruz", "juan@student.com", "Student");
-        userService.addUser("Maria Santos", "maria@visitor.com", "Visitor");
-        userService.addUser("Pedro Reyes", "pedro@employee.com", "Employee");
+        // Test borrowing
+        libraryService.borrowBook("juan@student.com", "978-0134685991");
 
-        
-        userService.listAllUsers();
+        // Test returning
+        libraryService.returnBook("juan@student.com", "978-0134685991");
 
         MongoConfig.closeConnection();
     }
