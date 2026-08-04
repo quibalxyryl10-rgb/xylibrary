@@ -14,7 +14,7 @@ public class BookService {
         this.bookCollection = db.getCollection("books");
     }
 
-   
+    // Create: Add a new book
     public void addBook(String title, String author, String isbn, String category, int totalCopies) {
         Document book = new Document("title", title)
                 .append("author", author)
@@ -27,19 +27,24 @@ public class BookService {
         System.out.println("Book added successfully!");
     }
 
-   
+    // Read: Find a book by ISBN
     public Document findBookByIsbn(String isbn) {
         return bookCollection.find(Filters.eq("isbn", isbn)).first();
     }
 
-  
+    // Read: Get all books (prints to console)
     public void listAllBooks() {
         for (Document book : bookCollection.find()) {
             System.out.println(book.toJson());
         }
     }
 
-    
+    // Read: Get all books as raw documents (used by the UI)
+    public Iterable<Document> getAllBooksRaw() {
+        return bookCollection.find();
+    }
+
+    // Update: Modify available stock copies
     public void updateAvailableCopies(String isbn, int countChange) {
         bookCollection.updateOne(
                 Filters.eq("isbn", isbn),
@@ -48,7 +53,7 @@ public class BookService {
         System.out.println("Stock updated!");
     }
 
-  
+    // Delete: Remove a book
     public void deleteBook(String isbn) {
         bookCollection.deleteOne(Filters.eq("isbn", isbn));
         System.out.println("Book deleted!");
