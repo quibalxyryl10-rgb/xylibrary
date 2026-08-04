@@ -44,13 +44,22 @@ public class BookService {
         return bookCollection.find();
     }
 
-    // Update: Modify available stock copies
+    // Update: Modify available stock copies (add/subtract from current value)
     public void updateAvailableCopies(String isbn, int countChange) {
         bookCollection.updateOne(
                 Filters.eq("isbn", isbn),
                 Updates.inc("availableCopies", countChange)
         );
         System.out.println("Stock updated!");
+    }
+
+    // Update: Set an exact new value for available copies (used by the UI's Update button)
+    public void setAvailableCopies(String isbn, int newAvailable) {
+        bookCollection.updateOne(
+                Filters.eq("isbn", isbn),
+                Updates.set("availableCopies", newAvailable)
+        );
+        System.out.println("Copies updated!");
     }
 
     // Delete: Remove a book

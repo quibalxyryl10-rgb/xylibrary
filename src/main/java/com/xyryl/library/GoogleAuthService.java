@@ -21,7 +21,7 @@ import java.util.Scanner;
 public class GoogleAuthService {
 
     private static final String CLIENT_ID = "237963619153-9bk2b3sh3o9sq7pmta5jv8gu0f8bevq1.apps.googleusercontent.com";
-    private static final String CLIENT_SECRET = "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";
+    private static final String CLIENT_SECRET = "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";
     private static final List<String> SCOPES = Arrays.asList(
             "https://www.googleapis.com/auth/userinfo.email",
             "https://www.googleapis.com/auth/userinfo.profile"
@@ -65,11 +65,15 @@ public class GoogleAuthService {
     }
 
     private static String extractJsonValue(String json, String key) {
-        String search = "\"" + key + "\":\"";
-        int start = json.indexOf(search);
-        if (start == -1) return "";
-        start += search.length();
-        int end = json.indexOf("\"", start);
-        return json.substring(start, end);
+        String search = "\"" + key + "\"";
+        int keyIndex = json.indexOf(search);
+        if (keyIndex == -1) return "";
+        int colonIndex = json.indexOf(":", keyIndex);
+        if (colonIndex == -1) return "";
+        int startQuote = json.indexOf("\"", colonIndex);
+        if (startQuote == -1) return "";
+        int endQuote = json.indexOf("\"", startQuote + 1);
+        if (endQuote == -1) return "";
+        return json.substring(startQuote + 1, endQuote);
     }
 }
